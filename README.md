@@ -23,6 +23,8 @@ It leverages modern Neovim features, like the diagnostics framework for the
 attachment warning and it implements an in-process LSP server for the contact
 completion.
 
+<p align="center"> <img src="assets/screenshot.png" alt="mailassist.nvim screenshot" style="max-width:90%;border:solid 2px"/> </p>
+
 ## Installation
 
 Use your favorite plugin manager. For example, with [lazy.nvim](https://github.com/folke/lazy.nvim):
@@ -97,6 +99,6 @@ end
 - Neovim 0.10+
 - Optional: [khard](https://github.com/scheibler/khard), [notmuch](https://notmuchmail.org/), mutt
 
-## License
+## Similar plugins
 
-MIT
+- [vim-mail](https://github.com/dbeniamine/vim-mail) also provides contact completion, and much more, like mail sending, quick header navigation.
