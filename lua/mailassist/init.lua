@@ -26,6 +26,12 @@ local M = {
   contacts_load_khard = true,
   -- Load contacts from notmuch unconditionally
   contacts_load_notmuch = false,
+
+  -- Options for signature completion:
+  -- Manually injecting contacts
+  inject_signatures = {},
+  -- Directories to load signatures from
+  signature_dirs = { '~/.mutt/signatures' },
 }
 
 function M.setup(opts)
@@ -46,7 +52,7 @@ function M.setup(opts)
 end
 
 --------------------------------------------------------------------------------
--- In-process LSP server, e.g., for completion
+-- Contact database building
 --------------------------------------------------------------------------------
 
 local contacts = nil
@@ -175,6 +181,48 @@ function M.toggle_contacts_notmuch()
   end
 end
 
+--------------------------------------------------------------------------------
+-- Signature database building
+--------------------------------------------------------------------------------
+
+local signatures = nil
+
+local function add_signature_from_file(filepath, label)
+  table.insert(signatures, {
+    label = label,
+    -- Read file content as signature
+    signature = table.concat(vim.fn.readfile(filepath), '\n'),
+  })
+end
+
+local function build_signatures_database()
+  if signatures ~= nil then
+    return
+  end
+
+  signatures = vim.deepcopy(M.inject_signatures or {})
+
+  for _, dir in ipairs(M.signature_dirs) do
+    local sig_dir = vim.fn.expand(dir)
+    if vim.fn.isdirectory(sig_dir) == 1 then
+      for _, filename in ipairs(vim.fn.readdir(sig_dir)) do
+        local filepath = sig_dir .. '/' .. filename
+        if vim.fn.filereadable(filepath) == 1 then
+          local fnshort = filename:gsub('%..*$', '')
+          add_signature_from_file(filepath, fnshort)
+        end
+      end
+    end
+  end
+
+  vim.notify(tostring(#signatures) .. ' signatures loaded by mailassist', vim.log.levels.INFO)
+end
+
+
+--------------------------------------------------------------------------------
+-- In-process LSP server, e.g., for completion
+--------------------------------------------------------------------------------
+
 local ms = vim.lsp.protocol.Methods
 local handlers = {}
 
@@ -185,7 +233,7 @@ handlers[ms.initialize] = function(_, callback)
       -- definitionProvider = true,
       -- referencesProvider = true,
       completionProvider = {
-        triggerCharacters = { '<', '@' },
+        triggerCharacters = { '<', '@', '-' },
       },
     },
     serverInfo = {
@@ -214,10 +262,11 @@ local function getComplItemsNameEmail()
         }
       else
         if contact.name then
+          local full = contact.name .. ' <' .. contact.email .. '>'
           item = {
             label = contact.name,
-            insertText = contact.name .. ' <' .. contact.email .. '>',
-            detail = contact.name .. ' <' .. contact.email .. '>',
+            insertText = full,
+            detail = full,
             kind = vim.lsp.protocol.CompletionItemKind['Value']
           }
         else
@@ -284,20 +333,41 @@ local function getComplItemsEmail()
   return items
 end
 
+local function getComplSignatures()
+  build_signatures_database()
+  local items = {}
+
+  -- Go through signatures and create completion items
+  for _, sig in ipairs(signatures) do
+    local full = '-- \n' .. sig.signature
+    local item = {
+      label = '--' .. sig.label,
+      kind = vim.lsp.protocol.CompletionItemKind['Interface'],
+      insertText = full,
+      detail = full
+    }
+    table.insert(items, item)
+  end
+
+  return items
+end
+
 ---@param params lsp.CompletionParams
 ---@param callback fun(err?: lsp.ResponseError, result: lsp.CompletionItem[])
 handlers[ms.textDocument_completion] = function(params, callback)
+  local trigger_completion_handlers = {
+    ['@'] = getComplItemsEmail,
+    ['<'] = getComplItemsName,
+    ['-'] = getComplSignatures,
+  }
+
   local items = {}
 
-  -- Triggered by a triggerCharacter...
-  if params.context.triggerKind == 2 and params.context.triggerCharacter == '@' then
-    items = getComplItemsName()
+  -- If triggered by character then search for special handler
+  if params.context.triggerKind == 2 and trigger_completion_handlers[params.context.triggerCharacter] then
+    items = trigger_completion_handlers[params.context.triggerCharacter]()
   else
-    if params.context.triggerKind == 2 and params.context.triggerCharacter == '<' then
-      items = getComplItemsEmail()
-    else
-      items = getComplItemsNameEmail()
-    end
+    items = getComplItemsNameEmail()
   end
 
   callback(nil, {

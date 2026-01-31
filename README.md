@@ -2,8 +2,8 @@
 
 **Mailassist** is a Neovim plugin to assist with composing emails, providing
 features such as attachment reminders, contact completion, and easy attachment
-header insertion. Users will typically use a test-based mail client (MUA) like
-mutt or neomutt and Neovim for mail composing.
+header insertion. Users will typically use a text-based mail client (MUA) like
+mutt or Neomutt and Neovim for mail composing.
 
 ## Features
 
@@ -15,13 +15,15 @@ mutt or neomutt and Neovim for mail composing.
   and names from various sources:
   - Mutt alias files
   - Khard address book
-  - Notmuch address database (optional)
+  - Notmuch address database
+- **Signature completion:** Provides LSP-powered completion for mail
+  signatures.
 - **Configurable Keymaps:** Default keymaps for common actions, with the
   ability to disable or customize.
 
-It leverages modern Neovim features, like the diagnostics framework for the
-attachment warning and it implements an in-process LSP server for the contact
-completion.
+It leverages modern Neovim facilities, like the diagnostics framework for the
+attachment warning and it implements an in-process LSP server for completion
+tasks.
 
 <p align="center"> <img src="assets/screenshot.png" alt="mailassist.nvim screenshot" style="max-width:90%;border:solid 2px"/> </p>
 
@@ -47,9 +49,10 @@ database is loaded lazily. You need a completion plugin, like
 [mini.complete](https://github.com/nvim-mini/mini.completion).
 
 Completion knows different modes depending on the trigger:
-- By default `name <email>` is completed.
-- The trigger `<` causes an `email` completion.
-- The trigger `@` causes a `name` completion.
+- The trigger character `<` causes an email completion.
+- The trigger character `@` causes a name completion.
+- The trigger character `-` causes a signature completion.
+- Otherwise `name <email>` is completed.
 
 The default keymaps are as follows:
 - `<C-a>` (insert/normal mode): Prompt to add an `Attach:` header.
@@ -87,19 +90,34 @@ require("mailassist").setup({
   contacts_load_khard = true,
   -- Load contacts from notmuch unconditionally
   contacts_load_notmuch = false,
+
+  -- Options for signature completion:
+  -- Manually injecting contacts
+  inject_signatures = {},
+  -- Directories to load signatures from
+  signature_dirs = { '~/.mutt/signatures' },
 })
 ```
 
-Contacts can be injected into the database by passing a table like this:
+Contacts and signatures can be injected into the database by passing a table
+like this:
 ```lua
-contacts = {
+local contacts = {
   { alias = 'alice',           email = 'alice@example.org' },
   { alias = 'board',           email = 'alice@example.org, bob@example.org, cesar@example.org' },
   { name = 'Alice Wonder',     email = 'alice@example.org' },
   { email = 'dave@example.org' },
 }
-require("mailassist").setup({
-    inject_contacts = conacts
+
+local signatures = {
+  { label = 'home',            signature = 'Your name\nYour home' },
+  { label = 'work',            signature = 'Your name\nYour company' },
+}
+
+require('mailassist').setup({
+  attach_keywords = { 'attach', 'enclosed', 'pdf', 'anhang', 'angehängt' },
+  inject_contacts = contacts,
+  inject_signatures = signatures
 })
 ```
 
