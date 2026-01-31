@@ -7,8 +7,9 @@ mutt or Neomutt and Neovim for mail composing.
 
 ## Features
 
-- **Attachment Reminder:** Warns you if you mention an attachment in your email
+- **Attachment Checker:** Warns you if you mention an attachment in your email
   body but forget to add an `Attach:` header.
+- **Anger Checker:** Warns you if you mention some inappropriate keywords.
 - **Attach Header Insertion:** Quickly insert an `Attach:` header with a file
   prompt.
 - **Contact Completion:** Provides LSP-powered completion for email addresses
@@ -75,10 +76,12 @@ require("mailassist").setup({
   -- Enable or disable default keymaps.
   add_default_keymaps = true,
 
-  -- Options concerning attachments:
+  -- Options concerning warnings:
   -- Keywords that indicate an attachment is mentioned in the email body. Set to empty list
   -- to disable attachment warning.
   attach_keywords = { 'attach', 'enclosed', 'pdf' },
+  -- Keywords indicating aggressive language
+  anger_keywords = {},
   -- Attach warning does not apply to quotation lines. Set the start-quotation symbols here.
   quote_symbols = '>|',
 

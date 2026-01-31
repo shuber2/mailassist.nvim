@@ -6,10 +6,12 @@ local M = {
   -- Enable or disable default keymaps.
   add_default_keymaps = true,
 
-  -- Options concerning attachments:
+  -- Options concerning warnings:
   -- Keywords that indicate an attachment is mentioned in the email body. Set to empty list
   -- to disable attachment warning.
   attach_keywords = { 'attach', 'enclosed', 'pdf' },
+  -- Keywords indicating aggressive language
+  anger_keywords = {},
   -- Attach warning does not apply to quotation lines. Set the start-quotation symbols here.
   quote_symbols = '>|',
 
@@ -43,13 +45,10 @@ function M.setup(opts)
     M[k] = v
   end
 
-  -- If there are attachment keywords, set up autocmd to check for them
-  if #M.attach_keywords > 0 then
-    vim.api.nvim_create_autocmd({ 'BufRead', 'TextChanged', 'InsertLeave', 'InsertEnter' },
-      {
-        callback = M.update_attach_warning,
-      })
-  end
+  vim.api.nvim_create_autocmd({ 'BufRead', 'TextChanged', 'InsertLeave', 'InsertEnter' },
+    {
+      callback = M.update_linting,
+    })
 
   if M.add_default_keymaps then
     M.default_keymaps()
@@ -531,17 +530,14 @@ end
 -- Attachment warning code
 --------------------------------------------------------------------------------
 
-local attach_warn_message = 'Possible attachment mentioned, but no Attach: header found.'
-local attachwarn_ns = vim.api.nvim_create_namespace('attachwarn')
+local mailassist_lint_ns = vim.api.nvim_create_namespace('attachwarn')
 local attachwarn_notify = false
 
--- Check for the presence of the Attach: header and clear or set diagnostics
-function M.update_attach_warning()
-  if vim.bo.filetype ~= 'mail' then
-    return
-  end
+local attach_warn_message = 'Possible attachment mentioned, but no Attach: header found.'
+local anger_warn_message = 'Possibly offensive language. Sleep a night over it?'
 
-  vim.diagnostic.reset(attachwarn_ns, 0)
+
+local function update_attach_warning(diagnostics)
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
   -- Check for an attach header and exit if so
@@ -550,8 +546,6 @@ function M.update_attach_warning()
       return
     end
   end
-
-  local diagnostics = {}
 
   for linenr, line in ipairs(lines) do
     -- Skip quoted lines
@@ -574,8 +568,6 @@ function M.update_attach_warning()
     ::continue::
   end
 
-  vim.diagnostic.set(attachwarn_ns, 0, diagnostics, {})
-
   -- Warn once but never again
   if not attachwarn_notify then
     attachwarn_notify = true
@@ -583,6 +575,45 @@ function M.update_attach_warning()
       vim.notify(attach_warn_message, vim.log.levels.WARN)
     end)
   end
+
+  return diagnostics
+end
+
+local function update_anger_warning(diagnostics)
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+
+  for linenr, line in ipairs(lines) do
+    -- Skip quoted lines
+    if line:match('^%s*[' .. M.quote_symbols .. ']') then
+      goto continue
+    end
+
+    for _, kw in ipairs(M.anger_keywords) do
+      local s, e = line:lower():find(kw)
+      if s ~= nil then
+        table.insert(diagnostics, {
+          lnum = linenr - 1,
+          col = s - 1,
+          end_col = e,
+          message = anger_warn_message,
+          severity = vim.diagnostic.severity.WARN,
+        })
+      end
+    end
+    ::continue::
+  end
+end
+
+function M.update_linting()
+  if vim.bo.filetype ~= 'mail' then
+    return
+  end
+
+  local diagnostics = {}
+  update_attach_warning(diagnostics)
+  update_anger_warning(diagnostics)
+
+  vim.diagnostic.set(mailassist_lint_ns, 0, diagnostics, {})
 end
 
 --------------------------------------------------------------------------------
