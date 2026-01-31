@@ -76,9 +76,8 @@ require("mailassist").setup({
   add_default_keymaps = true,
 
   -- Options concerning attachments:
-  -- Enable or disable attachment warning feature.
-  warn_missing_attach = true,
-  -- Keywords that indicate an attachment is mentioned in the email body.
+  -- Keywords that indicate an attachment is mentioned in the email body. Set to empty list
+  -- to disable attachment warning.
   attach_keywords = { 'attach', 'enclosed', 'pdf' },
   -- Attach warning does not apply to quotation lines. Set the start-quotation symbols here.
   quote_symbols = '>|',

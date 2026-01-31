@@ -2,15 +2,13 @@
 -- Mailassist: Neovim plugin to assist with composing emails
 --------------------------------------------------------------------------------
 
-
 local M = {
   -- Enable or disable default keymaps.
   add_default_keymaps = true,
 
   -- Options concerning attachments:
-  -- Enable or disable attachment warning feature.
-  warn_missing_attach = true,
-  -- Keywords that indicate an attachment is mentioned in the email body.
+  -- Keywords that indicate an attachment is mentioned in the email body. Set to empty list
+  -- to disable attachment warning.
   attach_keywords = { 'attach', 'enclosed', 'pdf' },
   -- Attach warning does not apply to quotation lines. Set the start-quotation symbols here.
   quote_symbols = '>|',
@@ -45,7 +43,8 @@ function M.setup(opts)
     M[k] = v
   end
 
-  if M.warn_missing_attach then
+  -- If there are attachment keywords, set up autocmd to check for them
+  if #M.attach_keywords > 0 then
     vim.api.nvim_create_autocmd({ 'BufRead', 'TextChanged', 'InsertLeave', 'InsertEnter' },
       {
         callback = M.update_attach_warning,
