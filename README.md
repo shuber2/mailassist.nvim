@@ -128,6 +128,7 @@ local signatures = {
 
 require('mailassist').setup({
   attach_keywords = { 'attach', 'enclosed', 'pdf', 'anhang', 'angehängt' },
+  anger_keywords = { 'fu+ck', 'wtf' }, -- patterns are enabled
   inject_contacts = contacts,
   inject_signatures = signatures
 })
