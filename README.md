@@ -158,7 +158,12 @@ end
   [notmuch](https://notmuchmail.org/), [Mutt](http://www.mutt.org/)
   or [NeoMutt](https://neomutt.org/)
 
-## Similar plugins
+## Related plugins
 
 - [vim-mail](https://github.com/dbeniamine/vim-mail) also provides contact
   completion, and much more, like mail sending, quick header navigation.
+
+
+- [mini-snippets-mutt.nvim](https://github.com/shuber2/mini-snippets-mutt.nvim)
+  is a former plugin of mine providing snippets for signatures and from
+  addresses. Is replaced by this plugin.
