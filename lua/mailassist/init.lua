@@ -56,9 +56,21 @@ local function add_contacts_from_mutt_alias_file(alias_file)
     return
   end
 
+  -- Known aliases from this file
+  aliases = {}
+
   for line in io.lines(alias_file) do
     local alias, email = line:match('^alias%s+(%S+)%s+(.+)$')
     if alias and email then
+      -- Replace known aliases in email
+      for prev_alias, prev_email in pairs(aliases) do
+        local pattern = prev_alias .. ','
+        if email:find(pattern) then
+          email = email:gsub(pattern, prev_email .. ',')
+        end
+      end
+
+      aliases[alias] = email
       table.insert(contacts, { alias = alias, email = email })
     end
   end
