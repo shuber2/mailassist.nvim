@@ -46,6 +46,11 @@ warning will be placed and upon the first completion trigger the contact
 database is loaded lazily. You need a completion plugin, like
 [mini.complete](https://github.com/nvim-mini/mini.completion).
 
+Completion knows different modes depending on the trigger:
+- By default `name <email>` is completed.
+- The trigger `<` causes an `email` completion.
+- The trigger `@` causes a `name` completion.
+
 The default keymaps are as follows:
 - `<C-a>` (insert/normal mode): Prompt to add an `Attach:` header.
 - `<localleader>ma`: Add an `Attach:` header.
@@ -62,14 +67,20 @@ Call `require("mailassist").setup({ ... })` with your options. The default optio
 require("mailassist").setup({
   -- Enable or disable default keymaps.
   add_default_keymaps = true,
+
+  -- Options concerning attachments:
   -- Enable or disable attachment warning feature.
   warn_missing_attach = true,
   -- Keywords that indicate an attachment is mentioned in the email body.
   attach_keywords = { 'attach', 'enclosed', 'pdf' },
   -- Attach warning does not apply to quotation lines. Set the start-quotation symbols here.
   quote_symbols = '>|',
+
+  -- Options concerning completion:
+  -- Manually injecting contacts
+  inject_contacts = {},
   -- Files to load contacts from mutt aliases.
-  mutt_alias_files = { "~/.mutt/alias", },
+  mutt_alias_files = { '~/.mutt/alias', },
   -- Load contacts from various sources unconditionally.
   contacts_load_mutt_aliases = true,
   -- Load contacts from khard unconditionally
@@ -79,7 +90,22 @@ require("mailassist").setup({
 })
 ```
 
-In order to change the default keymaps, adapt the key bindings in the default mapping below:
+Contacts can be injected into the database by passing a table like this:
+```lua
+contacts = {
+  { alias = 'alice',           email = 'alice@example.org' },
+  { alias = 'board',           email = 'alice@example.org, bob@example.org, cesar@example.org' },
+  { name = 'Alice Wonder',     email = 'alice@example.org' },
+  { email = 'dave@example.org' },
+}
+require("mailassist").setup({
+    inject_contacts = conacts
+})
+```
+
+Note that the `@` tigger will not complete `dave@example.org`, as it has no
+`name` or `alias`. In order to change the default keymaps, adapt the key
+bindings in the default mapping below:
 
 ```lua
 

@@ -6,14 +6,20 @@
 local M = {
   -- Enable or disable default keymaps.
   add_default_keymaps = true,
+
+  -- Options concerning attachments:
   -- Enable or disable attachment warning feature.
   warn_missing_attach = true,
   -- Keywords that indicate an attachment is mentioned in the email body.
   attach_keywords = { 'attach', 'enclosed', 'pdf' },
   -- Attach warning does not apply to quotation lines. Set the start-quotation symbols here.
   quote_symbols = '>|',
+
+  -- Options concerning completion:
+  -- Manually injecting contacts
+  inject_contacts = {},
   -- Files to load contacts from mutt aliases.
-  mutt_alias_files = { "~/.mutt/alias", },
+  mutt_alias_files = { '~/.mutt/alias', },
   -- Load contacts from various sources unconditionally.
   contacts_load_mutt_aliases = true,
   -- Load contacts from khard unconditionally
@@ -52,7 +58,7 @@ local function add_contacts_from_mutt_alias_file(alias_file)
   end
 
   for line in io.lines(alias_file) do
-    local alias, email = line:match("^alias%s+(%S+)%s+(.+)$")
+    local alias, email = line:match('^alias%s+(%S+)%s+(.+)$')
     if alias and email then
       table.insert(contacts, { alias = alias, email = email })
     end
@@ -71,7 +77,7 @@ function M.add_contacts_from_mutt_alias_files()
 end
 
 function M.add_contacts_from_khard()
-  local handle = io.popen("khard email --parsable --remove-first-line 2>/dev/null")
+  local handle = io.popen('khard email --parsable --remove-first-line 2>/dev/null')
   if handle == nil then
     return
   end
@@ -79,7 +85,7 @@ function M.add_contacts_from_khard()
   -- Each line is has tab-separated fields:
   -- <email> <Some name>
   for line in handle:lines() do
-    local email, name = line:match("^([^\t]*)\t([^\t]*)")
+    local email, name = line:match('^([^\t]*)\t([^\t]*)')
     if email then
       table.insert(contacts, { name = name, email = email })
     end
@@ -87,12 +93,12 @@ function M.add_contacts_from_khard()
 end
 
 function M.add_contacts_from_notmuch()
-  local handle = io.popen("notmuch address --format=json --deduplicate=address '*' 2>/dev/null")
+  local handle = io.popen('notmuch address --format=json --deduplicate=address ' * ' 2>/dev/null')
   if handle == nil then
     return
   end
 
-  local json_lines = handle:read("*a")
+  local json_lines = handle:read('*a')
   local ok, decoded = pcall(vim.fn.json_decode, json_lines)
   if not ok then
     return
@@ -108,7 +114,7 @@ local function build_contacts_database()
     return
   end
 
-  contacts = {}
+  contacts = vim.deepcopy(M.inject_contacts or {})
 
   if M.contacts_load_mutt_aliases then
     M.add_contacts_from_mutt_alias_files()
@@ -120,14 +126,14 @@ local function build_contacts_database()
     M.add_contacts_from_notmuch()
   end
 
-  vim.notify(tostring(#contacts) .. " contacts loaded by mailassist", vim.log.levels.INFO)
+  vim.notify(tostring(#contacts) .. ' contacts loaded by mailassist', vim.log.levels.INFO)
 
   -- contacts = {
-  --   { name = "Max Mustermann",            email = "max.musterman@fh-salzburg.ac.at", organization = "FHS" },
-  --   { name = "Alice Wonderland",          email = "alice.wonderland@example.com" },
-  --   { name = "Sepp Forcher" },
-  --   { email = "office@wonderbar.at" },
-  --   { email = "office@fh-salzburg.ac.at", organization = "FHS" },
+  --   { name = 'Max Mustermann',            email = 'max.musterman@fh-salzburg.ac.at', organization = 'FHS' },
+  --   { name = 'Alice Wonderland',          email = 'alice.wonderland@example.com' },
+  --   { name = 'Sepp Forcher' },
+  --   { email = 'office@wonderbar.at' },
+  --   { email = 'office@fh-salzburg.ac.at', organization = 'FHS' },
   -- }
 end
 
@@ -140,9 +146,9 @@ function M.toggle_contacts_mutt_aliases()
   M.contacts_load_mutt_aliases = not M.contacts_load_mutt_aliases
   rebuild_contacts_database()
   if M.contacts_load_mutt_aliases then
-    vim.notify("Mutt alias contacts loading enabled", vim.log.levels.INFO)
+    vim.notify('Mutt alias contacts loading enabled', vim.log.levels.INFO)
   else
-    vim.notify("Mutt alias contacts loading disabled", vim.log.levels.INFO)
+    vim.notify('Mutt alias contacts loading disabled', vim.log.levels.INFO)
   end
 end
 
@@ -150,9 +156,9 @@ function M.toggle_contacts_khard()
   M.contacts_load_khard = not M.contacts_load_khard
   rebuild_contacts_database()
   if M.contacts_load_khard then
-    vim.notify("Khard contacts loading enabled", vim.log.levels.INFO)
+    vim.notify('Khard contacts loading enabled', vim.log.levels.INFO)
   else
-    vim.notify("Khard contacts loading disabled", vim.log.levels.INFO)
+    vim.notify('Khard contacts loading disabled', vim.log.levels.INFO)
   end
 end
 
@@ -160,9 +166,9 @@ function M.toggle_contacts_notmuch()
   M.contacts_load_notmuch = not M.contacts_load_notmuch
   rebuild_contacts_database()
   if M.contacts_load_notmuch then
-    vim.notify("Notmuch contacts loading enabled", vim.log.levels.INFO)
+    vim.notify('Notmuch contacts loading enabled', vim.log.levels.INFO)
   else
-    vim.notify("Notmuch contacts loading disabled", vim.log.levels.INFO)
+    vim.notify('Notmuch contacts loading disabled', vim.log.levels.INFO)
   end
 end
 
@@ -176,12 +182,12 @@ handlers[ms.initialize] = function(_, callback)
       -- definitionProvider = true,
       -- referencesProvider = true,
       completionProvider = {
-        triggerCharacters = { "<", "@" },
+        triggerCharacters = { '<', '@' },
       },
     },
     serverInfo = {
-      name = "mailassist-lsp",
-      version = "0.0.1",
+      name = 'mailassist-lsp',
+      version = '0.0.1',
     },
   }
   callback(nil, initializeResult)
@@ -201,22 +207,22 @@ local function getComplItemsNameEmail()
           label = contact.alias,
           insertText = contact.email,
           detail = contact.email,
-          kind = vim.lsp.protocol.CompletionItemKind["Struct"]
+          kind = vim.lsp.protocol.CompletionItemKind['Struct']
         }
       else
         if contact.name then
           item = {
             label = contact.name,
-            insertText = contact.name .. " <" .. contact.email .. ">",
-            detail = contact.name .. " <" .. contact.email .. ">",
-            kind = vim.lsp.protocol.CompletionItemKind["Value"]
+            insertText = contact.name .. ' <' .. contact.email .. '>',
+            detail = contact.name .. ' <' .. contact.email .. '>',
+            kind = vim.lsp.protocol.CompletionItemKind['Value']
           }
         else
           item = {
             label = contact.email,
             insertText = contact.email,
             detail = contact.email,
-            kind = vim.lsp.protocol.CompletionItemKind["Reference"]
+            kind = vim.lsp.protocol.CompletionItemKind['Reference']
           }
         end
       end
@@ -241,7 +247,7 @@ local function getComplItemsName()
     if contact.name then
       local item = {
         label = contact.name,
-        kind = vim.lsp.protocol.CompletionItemKind["Field"]
+        kind = vim.lsp.protocol.CompletionItemKind['Field']
       }
       if contact.organization then
         item.labelDetails = {
@@ -262,7 +268,7 @@ local function getComplItemsEmail()
     if contact.email and not contact.alias then
       local item = {
         label = contact.email,
-        kind = vim.lsp.protocol.CompletionItemKind["Reference"]
+        kind = vim.lsp.protocol.CompletionItemKind['Reference']
       }
       if contact.organization then
         item.labelDetails = {
@@ -281,10 +287,10 @@ handlers[ms.textDocument_completion] = function(params, callback)
   local items = {}
 
   -- Triggered by a triggerCharacter...
-  if params.context.triggerKind == 2 and params.context.triggerCharacter == "@" then
+  if params.context.triggerKind == 2 and params.context.triggerCharacter == '@' then
     items = getComplItemsName()
   else
-    if params.context.triggerKind == 2 and params.context.triggerCharacter == "<" then
+    if params.context.triggerKind == 2 and params.context.triggerCharacter == '<' then
       items = getComplItemsEmail()
     else
       items = getComplItemsNameEmail()
@@ -302,7 +308,7 @@ local capabilities = vim.lsp.protocol.make_client_capabilities()
 local function start_lsp(buf)
   ---@type vim.lsp.ClientConfig
   local client_cfg = {
-    name = "mailassist-lsp",
+    name = 'mailassist-lsp',
     cmd = function()
       return {
         request = function(method, params, callback)
@@ -321,15 +327,15 @@ local function start_lsp(buf)
   return vim.lsp.start(client_cfg, { bufnr = buf, silent = false })
 end
 
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "mail",
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'mail',
   callback = function()
-    vim.bo.omnifunc = "v:lua.MiniCompletion.completefunc_lsp"
+    vim.bo.omnifunc = 'v:lua.MiniCompletion.completefunc_lsp'
   end,
 })
 
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "mail" },
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'mail' },
   callback = function(ev)
     start_lsp(ev.buf)
   end,
@@ -341,7 +347,7 @@ vim.api.nvim_create_autocmd("FileType", {
 --------------------------------------------------------------------------------
 
 local function add_attach_header(filename)
-  if not filename or filename == "" then return end
+  if not filename or filename == '' then return end
 
   local win = vim.api.nvim_get_current_win()
   local cur = vim.api.nvim_win_get_cursor(win)
@@ -352,7 +358,7 @@ local function add_attach_header(filename)
 
   -- Find first empty line (end of headers)
   for i, line in ipairs(lines) do
-    if line == "" then
+    if line == '' then
       insert_line = i - 1
       break
     end
@@ -363,7 +369,7 @@ local function add_attach_header(filename)
   end
 
   -- Insert Attach: header
-  vim.api.nvim_buf_set_lines(bufnr, insert_line, insert_line, false, { "Attach: " .. filename })
+  vim.api.nvim_buf_set_lines(bufnr, insert_line, insert_line, false, { 'Attach: ' .. filename })
 
   -- Restore cursor position
   vim.api.nvim_win_set_cursor(win, cur)
@@ -372,9 +378,9 @@ end
 function M.attach_file()
   -- Prompt for filename
   vim.ui.input({
-      prompt = "Attachment filename: ",
-      default = vim.fn.expand("$HOME") .. "/",
-      completion = "file",
+      prompt = 'Attachment filename: ',
+      default = vim.fn.expand('$HOME') .. '/',
+      completion = 'file',
     },
     add_attach_header
   )
