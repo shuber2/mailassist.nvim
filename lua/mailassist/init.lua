@@ -32,6 +32,12 @@ local M = {
   inject_signatures = {},
   -- Directories to load signatures from
   signature_dirs = { '~/.mutt/signatures' },
+
+  -- Options for from completion:
+  -- Manually injecting contacts
+  inject_fromaddresses = {},
+  -- Files to load 'from = "address"' lines from
+  from_source_files = { '~/.mutt/muttrc' },
 }
 
 function M.setup(opts)
@@ -218,6 +224,38 @@ local function build_signatures_database()
   vim.notify(tostring(#signatures) .. ' signatures loaded by mailassist', vim.log.levels.INFO)
 end
 
+--------------------------------------------------------------------------------
+-- From address database building
+--------------------------------------------------------------------------------
+
+local from_addresses = nil
+
+local function add_fromaddresses_from_file(filename)
+  print("Load " .. filename)
+  if vim.fn.filereadable(filename) == 0 then
+    return
+  end
+  for line in io.lines(filename) do
+    -- Match mutt-style: set from = "address"
+    local addr = line:match('^%s*set%s+from%s*=%s*"(.-)"')
+    if addr then
+      table.insert(from_addresses, addr)
+    end
+  end
+end
+
+local function build_fromaddresses_database()
+  if from_addresses ~= nil then
+    return
+  end
+
+  from_addresses = vim.deepcopy(M.inject_fromaddresses or {})
+
+  for _, file in ipairs(M.from_source_files) do
+    local expanded = vim.fn.expand(file)
+    add_fromaddresses_from_file(expanded)
+  end
+end
 
 --------------------------------------------------------------------------------
 -- In-process LSP server, e.g., for completion
@@ -352,6 +390,20 @@ local function getComplSignatures()
   return items
 end
 
+local function getComplFromAddresses()
+  build_fromaddresses_database()
+  local items = {}
+
+  for _, addr in ipairs(from_addresses) do
+    table.insert(items, {
+      label = addr,
+      kind = vim.lsp.protocol.CompletionItemKind['Value'],
+    })
+  end
+
+  return items
+end
+
 ---@param params lsp.CompletionParams
 ---@param callback fun(err?: lsp.ResponseError, result: lsp.CompletionItem[])
 handlers[ms.textDocument_completion] = function(params, callback)
@@ -367,7 +419,17 @@ handlers[ms.textDocument_completion] = function(params, callback)
   if params.context.triggerKind == 2 and trigger_completion_handlers[params.context.triggerCharacter] then
     items = trigger_completion_handlers[params.context.triggerCharacter]()
   else
-    items = getComplItemsNameEmail()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local line_nr = vim.api.nvim_win_get_cursor(0)[1] - 1 -- 0-based index
+    local line = vim.api.nvim_buf_get_lines(bufnr, line_nr, line_nr + 1, false)[1]
+
+    -- Check if we are at a "From:" header line
+    if line:match('^From:%s*') then
+      items = getComplFromAddresses()
+      -- Default is to complete name and email
+    else
+      items = getComplItemsNameEmail()
+    end
   end
 
   callback(nil, {

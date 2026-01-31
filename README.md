@@ -48,10 +48,13 @@ warning will be placed and upon the first completion trigger the contact
 database is loaded lazily. You need a completion plugin, like
 [mini.complete](https://github.com/nvim-mini/mini.completion).
 
-Completion knows different modes depending on the trigger:
+Different trigger characters affect the completion results:
 - The trigger character `<` causes an email completion.
 - The trigger character `@` causes a name completion.
 - The trigger character `-` causes a signature completion.
+
+Without a trigger character, the context affects the results:
+- At `From:` header line, from addresses are completed.
 - Otherwise `name <email>` is completed.
 
 The default keymaps are as follows:
@@ -96,6 +99,12 @@ require("mailassist").setup({
   inject_signatures = {},
   -- Directories to load signatures from
   signature_dirs = { '~/.mutt/signatures' },
+
+  -- Options for from completion:
+  -- Manually injecting contacts
+  inject_fromaddresses = {},
+  -- Files to load 'from = "address"' lines from
+  from_source_files = { '~/.mutt/muttrc' },
 })
 ```
 
@@ -110,8 +119,8 @@ local contacts = {
 }
 
 local signatures = {
-  { label = 'home',            signature = 'Your name\nYour home' },
-  { label = 'work',            signature = 'Your name\nYour company' },
+  { label = 'home', signature = 'Your name\nYour home' },
+  { label = 'work', signature = 'Your name\nYour company' },
 }
 
 require('mailassist').setup({
