@@ -29,9 +29,8 @@ local M = {
 }
 
 function M.setup(opts)
-  opts = opts or {}
-  if opts.attach_keywords then
-    M.attach_keywords = opts.attach_keywords
+  for k, v in pairs(opts) do
+    M[k] = v
   end
 
   if M.warn_missing_attach then
@@ -127,14 +126,6 @@ local function build_contacts_database()
   end
 
   vim.notify(tostring(#contacts) .. ' contacts loaded by mailassist', vim.log.levels.INFO)
-
-  -- contacts = {
-  --   { name = 'Max Mustermann',            email = 'max.musterman@fh-salzburg.ac.at', organization = 'FHS' },
-  --   { name = 'Alice Wonderland',          email = 'alice.wonderland@example.com' },
-  --   { name = 'Sepp Forcher' },
-  --   { email = 'office@wonderbar.at' },
-  --   { email = 'office@fh-salzburg.ac.at', organization = 'FHS' },
-  -- }
 end
 
 local function rebuild_contacts_database()
