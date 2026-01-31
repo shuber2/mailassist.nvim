@@ -55,7 +55,8 @@ Different trigger characters affect the completion results:
 
 Without a trigger character, the context affects the results:
 - At `From:` header line, from addresses are completed.
-- Otherwise `name <email>` is completed.
+- At the end of the file, signatures are completed.
+- Otherwise contacts are completed.
 
 The default keymaps are as follows:
 - `<C-a>` (insert/normal mode): Prompt to add an `Attach:` header.

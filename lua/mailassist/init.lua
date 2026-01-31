@@ -413,7 +413,7 @@ handlers[ms.textDocument_completion] = function(params, callback)
     ['-'] = getComplSignatures,
   }
 
-  local items = {}
+  local items = nil
 
   -- If triggered by character then search for special handler
   if params.context.triggerKind == 2 and trigger_completion_handlers[params.context.triggerCharacter] then
@@ -426,8 +426,15 @@ handlers[ms.textDocument_completion] = function(params, callback)
     -- Check if we are at a "From:" header line
     if line:match('^From:%s*') then
       items = getComplFromAddresses()
-      -- Default is to complete name and email
-    else
+    end
+
+    -- If at end of file then suggest signatures
+    if line_nr == vim.api.nvim_buf_line_count(bufnr) - 1 then
+      items = getComplSignatures()
+    end
+
+    -- Default is to complete name and email
+    if items == nil then
       items = getComplItemsNameEmail()
     end
   end
