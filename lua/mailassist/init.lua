@@ -15,7 +15,7 @@ local M = {
   -- Attach warning does not apply to quotation lines. Set the start-quotation symbols here.
   quote_symbols = '>|',
 
-  -- Options concerning completion:
+  -- Options for contact completion:
   -- Manually injecting contacts
   inject_contacts = {},
   -- Files to load contacts from mutt aliases.

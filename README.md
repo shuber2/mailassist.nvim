@@ -79,7 +79,7 @@ require("mailassist").setup({
   -- Attach warning does not apply to quotation lines. Set the start-quotation symbols here.
   quote_symbols = '>|',
 
-  -- Options concerning completion:
+  -- Options for contact completion:
   -- Manually injecting contacts
   inject_contacts = {},
   -- Files to load contacts from mutt aliases.
@@ -141,8 +141,11 @@ end
 ## Requirements
 
 - Neovim 0.10+
-- Optional: [khard](https://github.com/scheibler/khard), [notmuch](https://notmuchmail.org/), mutt
+- Optional: [khard](https://github.com/scheibler/khard),
+  [notmuch](https://notmuchmail.org/), [Mutt](http://www.mutt.org/)
+  or [NeoMutt](https://neomutt.org/)
 
 ## Similar plugins
 
-- [vim-mail](https://github.com/dbeniamine/vim-mail) also provides contact completion, and much more, like mail sending, quick header navigation.
+- [vim-mail](https://github.com/dbeniamine/vim-mail) also provides contact
+  completion, and much more, like mail sending, quick header navigation.
