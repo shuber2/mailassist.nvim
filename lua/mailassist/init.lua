@@ -489,6 +489,10 @@ vim.api.nvim_create_autocmd('FileType', {
 local function add_attach_header(filename)
   if not filename or filename == '' then return end
 
+  -- Escape spaces in filename with backslash as by
+  -- http://www.mutt.org/doc/manual/#attach-header
+  filename = filename:gsub(' ', '\\ ')
+
   local win = vim.api.nvim_get_current_win()
   local cur = vim.api.nvim_win_get_cursor(win)
 
