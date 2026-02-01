@@ -10,7 +10,7 @@ mutt or Neomutt and Neovim for mail composing.
 - **Attachment Checker:** Warns you if you mention an attachment in your email
   body but forget to add an `Attach:` header.
 - **Anger Checker:** Warns you if you mention some inappropriate keywords.
-- **Attach Header Insertion:** Quickly insert an `Attach:` header with a file
+- **Attach Header Insertion:** Quickly insert an `Attach:` [mutt pseudo header](http://www.mutt.org/doc/manual/#attach-header) with a file
   prompt.
 - **Contact Completion:** Provides LSP-powered completion for email addresses
   and names from various sources:
@@ -150,6 +150,11 @@ function M.default_keymaps()
 end
 
 ```
+
+## A note on Mutt
+
+If you use this plugin with [Mutt](http://www.mutt.org/) or
+[NeoMutt](https://neomutt.org/) then you will like to set the [edit_headers](http://www.mutt.org/doc/manual/#edit-headers) option.
 
 ## Requirements
 
