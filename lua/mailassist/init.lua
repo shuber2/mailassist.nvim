@@ -566,8 +566,13 @@ local function update_attach_warning(buf, diagnostics)
     end
 
     for _, kw in ipairs(M.attach_keywords) do
-      local s, e = line:lower():find(kw)
-      if s ~= nil then
+      local start = 1
+      while true do
+        local s, e = line:lower():find(kw, start)
+        if s == nil then
+          break
+        end
+
         table.insert(diagnostics, {
           lnum = linenr - 1,
           col = s - 1,
@@ -575,6 +580,8 @@ local function update_attach_warning(buf, diagnostics)
           message = attach_warn_message,
           severity = vim.diagnostic.severity.WARN,
         })
+
+        start = e + 1
       end
     end
     ::continue::
@@ -601,8 +608,13 @@ local function update_anger_warning(buf, diagnostics)
     end
 
     for _, kw in ipairs(M.anger_keywords) do
-      local s, e = line:lower():find(kw)
-      if s ~= nil then
+      local start = 1
+      while true do
+        local s, e = line:lower():find(kw, start)
+        if s == nil then
+          break
+        end
+
         table.insert(diagnostics, {
           lnum = linenr - 1,
           col = s - 1,
@@ -610,6 +622,8 @@ local function update_anger_warning(buf, diagnostics)
           message = anger_warn_message,
           severity = vim.diagnostic.severity.WARN,
         })
+
+        start = e + 1
       end
     end
     ::continue::
