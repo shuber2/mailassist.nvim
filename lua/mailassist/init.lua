@@ -45,9 +45,18 @@ function M.setup(opts)
     M[k] = v
   end
 
-  vim.api.nvim_create_autocmd({ 'BufRead', 'TextChanged', 'InsertLeave', 'InsertEnter' },
+  vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI' },
     {
-      callback = M.update_linting,
+      callback = function(args)
+        debounced_Update_linting(args.buf)
+      end
+    })
+
+  vim.api.nvim_create_autocmd({ 'BufRead' },
+    {
+      callback = function(args)
+        M.update_linting(args.buf)
+      end
     })
 
   if M.add_default_keymaps then
@@ -229,7 +238,6 @@ end
 local from_addresses = nil
 
 local function add_fromaddresses_from_file(filename)
-  print("Load " .. filename)
   if vim.fn.filereadable(filename) == 0 then
     return
   end
@@ -541,8 +549,8 @@ local attach_warn_message = 'Possible attachment mentioned, but no Attach: heade
 local anger_warn_message = 'Possibly offensive language. Sleep a night over it?'
 
 
-local function update_attach_warning(diagnostics)
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+local function update_attach_warning(buf, diagnostics)
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 
   -- Check for an attach header and exit if so
   for _, line in ipairs(lines) do
@@ -583,8 +591,8 @@ local function update_attach_warning(diagnostics)
   return diagnostics
 end
 
-local function update_anger_warning(diagnostics)
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+local function update_anger_warning(buf, diagnostics)
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 
   for linenr, line in ipairs(lines) do
     -- Skip quoted lines
@@ -608,16 +616,32 @@ local function update_anger_warning(diagnostics)
   end
 end
 
-function M.update_linting()
-  if vim.bo.filetype ~= 'mail' then
+local debounced_linting_timers = {}
+
+function debounced_Update_linting(buf)
+  t = debounced_linting_timers[buf]
+  if t == nil then
+    t = vim.uv.new_timer()
+    debounced_linting_timers[buf] = t
+  end
+
+  t:stop()
+  t:start(150, 0, vim.schedule_wrap(function()
+    M.update_linting(buf)
+  end))
+end
+
+function M.update_linting(buf)
+  -- Check whether buf has filetype mail:
+  if vim.bo[buf].filetype ~= 'mail' then
     return
   end
 
   local diagnostics = {}
-  update_attach_warning(diagnostics)
-  update_anger_warning(diagnostics)
+  update_attach_warning(buf, diagnostics)
+  update_anger_warning(buf, diagnostics)
 
-  vim.diagnostic.set(mailassist_lint_ns, 0, diagnostics, {})
+  vim.diagnostic.set(mailassist_lint_ns, buf, diagnostics, { update_in_insert = true })
 end
 
 --------------------------------------------------------------------------------
