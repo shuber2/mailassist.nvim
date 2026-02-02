@@ -45,7 +45,7 @@ function M.setup(opts)
     M[k] = v
   end
 
-  add_linting_autocmd()
+  M.add_linting_autocmd()
 
   if M.add_default_keymaps then
     M.default_keymaps()
@@ -57,7 +57,7 @@ end
 --------------------------------------------------------------------------------
 
 local function is_quote_line(line)
-  line:match('^%s*[' .. M.quote_symbols .. ']')
+  return line:match('^%s*[' .. M.quote_symbols .. ']')
 end
 
 
@@ -73,7 +73,7 @@ local function add_contacts_from_mutt_alias_file(alias_file)
   end
 
   -- Known aliases from this file
-  aliases = {}
+  local aliases = {}
 
   for line in io.lines(alias_file) do
     local alias, email = line:match('^alias%s+(%S+)%s+(.+)$')
@@ -120,7 +120,7 @@ function M.add_contacts_from_khard()
 end
 
 function M.add_contacts_from_notmuch()
-  local handle = io.popen('notmuch address --format=json --deduplicate=address ' * ' 2>/dev/null')
+  local handle = io.popen('notmuch address --format=json --deduplicate=address 2>/dev/null')
   if handle == nil then
     return
   end
@@ -705,8 +705,8 @@ end
 
 local debounced_linting_timers = {}
 
-function debounced_Update_linting(buf)
-  t = debounced_linting_timers[buf]
+local function debounced_Update_linting(buf)
+  local t = debounced_linting_timers[buf]
   if t == nil then
     t = vim.uv.new_timer()
     debounced_linting_timers[buf] = t
@@ -732,7 +732,7 @@ function M.update_linting(buf)
   vim.diagnostic.set(mailassist_lint_ns, buf, diagnostics, { update_in_insert = true })
 end
 
-function add_linting_autocmd()
+function M.add_linting_autocmd()
   vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI' },
     {
       callback = function(args)

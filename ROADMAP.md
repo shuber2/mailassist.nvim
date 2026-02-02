@@ -10,4 +10,8 @@
 
 ## Version 1.0 (in plan)
 
+TODO:
+- Improve code quality
+- Memoize completion items instead of contacts
+
 - Initial version.
