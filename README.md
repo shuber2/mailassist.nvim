@@ -7,18 +7,29 @@ mutt or Neomutt and Neovim for mail composing.
 
 ## Features
 
-- **Attachment Checker:** Warns you if you mention an attachment in your email
-  body but forget to add an `Attach:` header.
-- **Anger Checker:** Warns you if you mention some inappropriate keywords.
-- **Attach Header Insertion:** Quickly insert an `Attach:` [mutt pseudo header](http://www.mutt.org/doc/manual/#attach-header) with a file
-  prompt.
-- **Contact Completion:** Provides LSP-powered completion for email addresses
-  and names from various sources:
+**Completion:** Various LSP-powered completions depending on context and trigger characters.
+
+- **Contact Completion.** Provides completion for contacts, email-only and
+  name-only:
   - Mutt alias files
   - Khard address book
   - Notmuch address database
-- **Signature completion:** Provides LSP-powered completion for mail
-  signatures.
+- **Signature Completion:** Provides completion for mail signatures.
+- **From Completion:** Provides completion for from addresses gathered from
+  mutt configuration files.
+
+**Linting.** Various diagnostics concerning content and headers:
+
+- **Attachment Checker:** Warns you if you mention an attachment in your email
+  body but forget to add an `Attach:` header.
+- **Anger Checker:** Warns you if you mention some inappropriate keywords.
+- **Header Checker:** Puts error diagnostics on malformed or misplaced header
+  lines
+
+**Keymaps and utils:**
+
+- **Attach Header Insertion:** Quickly insert an `Attach:` [mutt pseudo
+  header](http://www.mutt.org/doc/manual/#attach-header) with a file prompt.
 - **Configurable Keymaps:** Default keymaps for common actions, with the
   ability to disable or customize.
 
