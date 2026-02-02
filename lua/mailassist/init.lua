@@ -546,7 +546,7 @@ local attach_warn_message = 'Possible attachment mentioned, but no Attach: heade
 local anger_warn_message = 'Possibly offensive language. Sleep a night over it?'
 
 
-local function update_attach_warning(buf, diagnostics)
+local function update_attach_diagnostics(buf, diagnostics)
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 
   -- Check for an attach header and exit if so
@@ -595,7 +595,7 @@ local function update_attach_warning(buf, diagnostics)
   return diagnostics
 end
 
-local function update_anger_warning(buf, diagnostics)
+local function update_anger_diagnostics(buf, diagnostics)
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 
   for linenr, line in ipairs(lines) do
@@ -626,6 +626,84 @@ local function update_anger_warning(buf, diagnostics)
   end
 end
 
+local function is_header_line(line)
+  return line:match('^%S+:%s.*$') ~= nil
+end
+
+local function update_header_diagnostics(buf, diagnostics)
+  -- The buffer either has an initial header block or not. If it has, the mail looks like this:
+  --   |Header: value
+  --   |Another-Header: value
+  --   |Another-Header: whith a very long value that
+  --   |	continues at the next line with a tab
+  --   |Another-Header: value
+  --   |
+  --   |Body line 1
+  --   |Body line 2
+  --
+  -- If it does not have a header block, it looks like this:
+  --   |Body line 1
+  --   |Body line 2
+  --
+  -- Check for:
+  --   - Proper header line format
+  --   - Proper tab-indentation for continued header lines
+  --   - No headers in the body block
+
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+  local in_header = true
+
+  for linenr, line in ipairs(lines) do
+    -- If first line is not a header line, then no header block
+    if linenr == 1 and not is_header_line(line) then
+      in_header = false
+      print("No header block")
+    end
+
+    -- (First) empty line indicates end of header block
+    if line == '' then
+      in_header = false
+    end
+
+    if in_header then
+      if line:match('^%s') then
+        -- Continued header line must start with tab
+        if not line:match('^\t') then
+          table.insert(diagnostics, {
+            lnum = linenr - 1,
+            col = 0,
+            end_col = #line,
+            message = 'Continued header line must start with a tab character.',
+            severity = vim.diagnostic.severity.ERROR,
+          })
+        end
+      else
+        -- New header line must match Header: value
+        if not is_header_line(line) then
+          table.insert(diagnostics, {
+            lnum = linenr - 1,
+            col = 0,
+            end_col = #line,
+            message = 'Malformed header line. Must be of form "Header: value".',
+            severity = vim.diagnostic.severity.ERROR,
+          })
+        end
+      end
+    else
+      -- In body, no headers allowed
+      if line:match('^%S+:%s*.*$') then
+        table.insert(diagnostics, {
+          lnum = linenr - 1,
+          col = 0,
+          end_col = #line,
+          message = 'Header lines in the body of the email are likely an error.',
+          severity = vim.diagnostic.severity.ERROR,
+        })
+      end
+    end
+  end
+end
+
 local debounced_linting_timers = {}
 
 function debounced_Update_linting(buf)
@@ -648,8 +726,9 @@ function M.update_linting(buf)
   end
 
   local diagnostics = {}
-  update_attach_warning(buf, diagnostics)
-  update_anger_warning(buf, diagnostics)
+  update_attach_diagnostics(buf, diagnostics)
+  update_anger_diagnostics(buf, diagnostics)
+  update_header_diagnostics(buf, diagnostics)
 
   vim.diagnostic.set(mailassist_lint_ns, buf, diagnostics, { update_in_insert = true })
 end
