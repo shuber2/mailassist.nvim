@@ -45,24 +45,21 @@ function M.setup(opts)
     M[k] = v
   end
 
-  vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI' },
-    {
-      callback = function(args)
-        debounced_Update_linting(args.buf)
-      end
-    })
-
-  vim.api.nvim_create_autocmd({ 'BufRead' },
-    {
-      callback = function(args)
-        M.update_linting(args.buf)
-      end
-    })
+  add_linting_autocmd()
 
   if M.add_default_keymaps then
     M.default_keymaps()
   end
 end
+
+--------------------------------------------------------------------------------
+-- Some helpers
+--------------------------------------------------------------------------------
+
+local function is_quote_line(line)
+  line:match('^%s*[' .. M.quote_symbols .. ']')
+end
+
 
 --------------------------------------------------------------------------------
 -- Contact database building
@@ -561,7 +558,7 @@ local function update_attach_warning(buf, diagnostics)
 
   for linenr, line in ipairs(lines) do
     -- Skip quoted lines
-    if line:match('^%s*[' .. M.quote_symbols .. ']') then
+    if is_quote_line(line) then
       goto continue
     end
 
@@ -602,8 +599,7 @@ local function update_anger_warning(buf, diagnostics)
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 
   for linenr, line in ipairs(lines) do
-    -- Skip quoted lines
-    if line:match('^%s*[' .. M.quote_symbols .. ']') then
+    if is_quote_line(line) then
       goto continue
     end
 
@@ -656,6 +652,22 @@ function M.update_linting(buf)
   update_anger_warning(buf, diagnostics)
 
   vim.diagnostic.set(mailassist_lint_ns, buf, diagnostics, { update_in_insert = true })
+end
+
+function add_linting_autocmd()
+  vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI' },
+    {
+      callback = function(args)
+        debounced_Update_linting(args.buf)
+      end
+    })
+
+  vim.api.nvim_create_autocmd({ 'BufRead' },
+    {
+      callback = function(args)
+        M.update_linting(args.buf)
+      end
+    })
 end
 
 --------------------------------------------------------------------------------
