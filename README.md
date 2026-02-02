@@ -183,3 +183,11 @@ If you use this plugin with [Mutt](http://www.mutt.org/) or
 - [mini-snippets-mutt.nvim](https://github.com/shuber2/mini-snippets-mutt.nvim)
   is a former plugin of mine providing snippets for signatures and from
   addresses. Is replaced by this plugin.
+
+- [mail-headers.nvim](https://codeberg.org/pmassot/mail-headers.nvim) provides
+  a couple of features to manipulate mail headers.
+
+
+## Milestones and roadmap
+
+See [ROADMAP.md](ROADMAP.md) for details.
