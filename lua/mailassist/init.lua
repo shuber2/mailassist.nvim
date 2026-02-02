@@ -411,8 +411,8 @@ end
 ---@param callback fun(err?: lsp.ResponseError, result: lsp.CompletionItem[])
 handlers[ms.textDocument_completion] = function(params, callback)
   local trigger_completion_handlers = {
-    ['@'] = getComplItemsEmail,
-    ['<'] = getComplItemsName,
+    ['@'] = getComplItemsName,
+    ['<'] = getComplItemsEmail,
     ['-'] = getComplSignatures,
   }
 

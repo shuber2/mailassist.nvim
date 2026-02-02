@@ -146,8 +146,8 @@ require('mailassist').setup({
 ```
 
 Note that the `@` tigger will not complete `dave@example.org`, as it has no
-`name` or `alias`. In order to change the default keymaps, adapt the key
-bindings in the default mapping below:
+`name`. In order to change the default keymaps, adapt the key bindings in the
+default mapping below:
 
 ```lua
 
