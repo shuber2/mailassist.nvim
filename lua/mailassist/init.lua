@@ -627,7 +627,7 @@ local function update_anger_diagnostics(buf, diagnostics)
 end
 
 local function is_header_line(line)
-  return line:match('^%S+:%s.*$') ~= nil
+  return line:match('^%S+:') ~= nil
 end
 
 local function update_header_diagnostics(buf, diagnostics)
@@ -657,7 +657,6 @@ local function update_header_diagnostics(buf, diagnostics)
     -- If first line is not a header line, then no header block
     if linenr == 1 and not is_header_line(line) then
       in_header = false
-      print("No header block")
     end
 
     -- (First) empty line indicates end of header block
