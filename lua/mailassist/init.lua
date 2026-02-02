@@ -285,7 +285,7 @@ handlers[ms.initialize] = function(_, callback)
   callback(nil, initializeResult)
 end
 
-local function getComplItemsNameEmail()
+local function get_completion_items_fullcontacts()
   build_contacts_database()
 
   local items = {}
@@ -332,7 +332,7 @@ local function getComplItemsNameEmail()
   return items
 end
 
-local function getComplItemsName()
+local function get_completion_items_name()
   build_contacts_database()
 
   local items = {}
@@ -353,7 +353,7 @@ local function getComplItemsName()
   return items
 end
 
-local function getComplItemsEmail()
+local function get_completion_items_email()
   build_contacts_database()
 
   local items = {}
@@ -374,7 +374,7 @@ local function getComplItemsEmail()
   return items
 end
 
-local function getComplSignatures()
+local function get_completion_items_signatures()
   build_signatures_database()
   local items = {}
 
@@ -393,7 +393,7 @@ local function getComplSignatures()
   return items
 end
 
-local function getComplFromAddresses()
+local function get_completion_from_addresses()
   build_fromaddresses_database()
   local items = {}
 
@@ -411,9 +411,9 @@ end
 ---@param callback fun(err?: lsp.ResponseError, result: lsp.CompletionItem[])
 handlers[ms.textDocument_completion] = function(params, callback)
   local trigger_completion_handlers = {
-    ['@'] = getComplItemsName,
-    ['<'] = getComplItemsEmail,
-    ['-'] = getComplSignatures,
+    ['@'] = get_completion_items_name,
+    ['<'] = get_completion_items_email,
+    ['-'] = get_completion_items_signatures,
   }
 
   local items = nil
@@ -428,17 +428,17 @@ handlers[ms.textDocument_completion] = function(params, callback)
 
     -- Check if we are at a "From:" header line
     if line:match('^From:%s*') then
-      items = getComplFromAddresses()
+      items = get_completion_from_addresses()
     end
 
     -- If at end of file then suggest signatures
     if line_nr == vim.api.nvim_buf_line_count(bufnr) - 1 then
-      items = getComplSignatures()
+      items = get_completion_items_signatures()
     end
 
     -- Default is to complete name and email
     if items == nil then
-      items = getComplItemsNameEmail()
+      items = get_completion_items_fullcontacts()
     end
   end
 
