@@ -9,7 +9,7 @@ local M = {
   -- Options concerning warnings:
   -- Keywords that indicate an attachment is mentioned in the email body. Set to empty list
   -- to disable attachment warning.
-  attach_keywords = { 'attach', 'enclosed', 'pdf' },
+  attach_keywords = { 'attach%S*', 'enclose%S*', 'pdf' },
   -- Keywords indicating aggressive language
   anger_keywords = {},
   -- Attach warning does not apply to quotation lines. Set the start-quotation symbols here.

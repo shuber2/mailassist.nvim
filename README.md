@@ -90,7 +90,7 @@ require("mailassist").setup({
   -- Options concerning warnings:
   -- Keywords that indicate an attachment is mentioned in the email body. Set to empty list
   -- to disable attachment warning.
-  attach_keywords = { 'attach', 'enclosed', 'pdf' },
+  attach_keywords = { 'attach%S*', 'enclose%S*', 'pdf' },
   -- Keywords indicating aggressive language
   anger_keywords = {},
   -- Attach warning does not apply to quotation lines. Set the start-quotation symbols here.
@@ -138,8 +138,8 @@ local signatures = {
 }
 
 require('mailassist').setup({
-  attach_keywords = { 'attach', 'enclosed', 'pdf', 'anhang', 'angehängt' },
-  anger_keywords = { 'fu+ck', 'wtf' }, -- patterns are enabled
+  attach_keywords = { 'attach%S*', 'enclose%S*', 'pdf', 'anhang', 'an%S*häng%S*' },
+  anger_keywords = { 'fu*ck', 'wtf' }, -- patterns are enabled
   inject_contacts = contacts,
   inject_signatures = signatures
 })
