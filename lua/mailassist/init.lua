@@ -627,13 +627,20 @@ local function update_anger_diagnostics(buf, diagnostics)
 end
 
 local function is_header_line(line)
-  return line:match('^%S+:') ~= nil
+  -- Matches:
+  --   |heaader:
+  --   |header: foo
+  --
+  -- Does not match:
+  --   |http://www.example.com
+  return line:match('^%S+:( .*)?$') ~= nil
 end
 
 local function update_header_diagnostics(buf, diagnostics)
   -- The buffer either has an initial header block or not. If it has, the mail looks like this:
   --   |Header: value
   --   |Another-Header: value
+  --   |Another-Header:
   --   |Another-Header: whith a very long value that
   --   |	continues at the next line with a tab
   --   |Another-Header: value
@@ -690,7 +697,7 @@ local function update_header_diagnostics(buf, diagnostics)
       end
     else
       -- In body, no headers allowed
-      if line:match('^%S+:%s*.*$') then
+      if is_header_line(line) then
         table.insert(diagnostics, {
           lnum = linenr - 1,
           col = 0,
