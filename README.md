@@ -18,7 +18,7 @@ mutt or Neomutt and Neovim for mail composing.
 - **From Completion:** Provides completion for from addresses gathered from
   mutt configuration files.
 
-**Linting.** Various diagnostics concerning content and headers:
+**Linting:** Various diagnostics concerning content and headers.
 
 - **Attachment Checker:** Warns you if you mention an attachment in your email
   body but forget to add an `Attach:` header.
@@ -190,4 +190,4 @@ If you use this plugin with [Mutt](http://www.mutt.org/) or
 
 ## Milestones and roadmap
 
-See [ROADMAP.md](ROADMAP.md) for details.
+See [ROADMAP](ROADMAP.md) for details.
