@@ -3,7 +3,7 @@
 **Mailassist** is a Neovim plugin to assist with composing emails, providing
 features such as attachment reminders, contact completion, and easy attachment
 header insertion. Users will typically use a text-based mail client (MUA) like
-mutt or Neomutt and Neovim for mail composing.
+Mutt or Neomutt and Neovim for mail composing.
 
 ## Features
 
@@ -16,7 +16,7 @@ mutt or Neomutt and Neovim for mail composing.
   - Notmuch address database
 - **Signature Completion:** Provides completion for mail signatures.
 - **From Completion:** Provides completion for from addresses gathered from
-  mutt configuration files.
+  Mutt configuration files.
 
 **Linting:** Various diagnostics concerning content and headers.
 
@@ -28,7 +28,7 @@ mutt or Neomutt and Neovim for mail composing.
 
 **Keymaps and utils:**
 
-- **Attach Header Insertion:** Quickly insert an `Attach:` [mutt pseudo
+- **Attach Header Insertion:** Quickly insert an `Attach:` [Mutt pseudo
   header](http://www.mutt.org/doc/manual/#attach-header) with a file prompt.
 - **Configurable Keymaps:** Default keymaps for common actions, with the
   ability to disable or customize.
@@ -165,7 +165,9 @@ end
 ## A note on Mutt
 
 If you use this plugin with [Mutt](http://www.mutt.org/) or
-[NeoMutt](https://neomutt.org/) then you will like to set the [edit_headers](http://www.mutt.org/doc/manual/#edit-headers) option.
+[NeoMutt](https://neomutt.org/) then you will like to set the
+[edit_headers](http://www.mutt.org/doc/manual/#edit-headers) option and if you run NeoMutt then
+probably also [auto_edit](https://neomutt.org/guide/reference#auto-edit).
 
 ## Requirements
 
