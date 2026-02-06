@@ -635,12 +635,12 @@ local function is_header_line(line)
   --   |http://www.example.com
 
   -- Empty header
-  if line:match('^%S+:$') ~= nil then
+  if line:match('^[^@]%S+:$') ~= nil then
     return true
   end
 
   -- Non-empty header
-  return line:match('^%S+: .*$') ~= nil
+  return line:match('^[^@]%S+: .*$') ~= nil
 end
 
 local function update_header_diagnostics(buf, diagnostics)
