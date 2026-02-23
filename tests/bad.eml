@@ -1,0 +1,31 @@
+To: Max <max@example.org>
+Error for malformed header
+Cc: But also correct
+header continuation triggers an error.
+
+Cc: Alice <alice@example.org,
+	bob@example.org
+Subject: A good mail
+
+Hi my dear,
+
+here is the link:
+https://www.is-no-header-line.com
+
+And sometimes a line break at a bad location might also produce bad
+cases: like this.
+
+And do not forget to attach a PDF if you mention it; will trigger
+a warning.
+
+@Bob: Please confirm.
+
+To: Triggers a warning
+
+Subject: Triggers a warning
+
+Best
+Me
+
+
+p.s. Fuuuck also gives a warning

@@ -628,19 +628,28 @@ end
 
 local function is_header_line(line)
   -- Matches:
-  --   |heaader:
-  --   |header: foo
-  --
-  -- Does not match:
-  --   |http://www.example.com
+  --   |heaader:$ (empty header)
+  --   |header: foo$ (non-empty header)
 
   -- Empty header
-  if line:match('^[^@]%S+:$') ~= nil then
+  if line:match('^%S+:$') ~= nil then
     return true
   end
 
   -- Non-empty header
-  return line:match('^[^@]%S+: .*$') ~= nil
+  return line:match('^%S+: .*$') ~= nil
+end
+
+local function is_standard_header_line(line)
+  local std_headers = { 'To:', 'Cc:', 'Subject:', 'From:' }
+
+  for _, sh in ipairs(std_headers) do
+    if line:match('^' .. sh) then
+      return true
+    end
+  end
+
+  return false
 end
 
 local function update_header_diagnostics(buf, diagnostics)
@@ -702,15 +711,21 @@ local function update_header_diagnostics(buf, diagnostics)
           })
         end
       end
+    -- Not in_header
     else
-      -- In body, no headers allowed
-      if is_header_line(line) then
+      -- If there is a header line in the bodey, this is most likely an error. However,
+      -- checking for a gneric header is producing many false positives, such as if a
+      -- line break follows a word and a colon in prosa text or such.
+      -- However, if we check for a couple of standard headers starting
+      -- with capital letters, this should have an acceptable false positive
+      -- rate.
+      if is_standard_header_line(line) then
         table.insert(diagnostics, {
           lnum = linenr - 1,
           col = 0,
           end_col = #line,
           message = 'Header lines in the body of the email are likely an error.',
-          severity = vim.diagnostic.severity.ERROR,
+          severity = vim.diagnostic.severity.WARN,
         })
       end
     end
