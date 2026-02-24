@@ -5,6 +5,7 @@ header continuation triggers an error.
 
 Cc: Alice <alice@example.org,
 	bob@example.org
+BCC: case insensitive header matching
 Subject: A good mail
 
 Hi my dear,

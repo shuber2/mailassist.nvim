@@ -632,19 +632,19 @@ local function is_header_line(line)
   --   |header: foo$ (non-empty header)
 
   -- Empty header
-  if line:match('^%S+:$') ~= nil then
+  if line:match('^%S+[ \t]*:$') ~= nil then
     return true
   end
 
   -- Non-empty header
-  return line:match('^%S+: .*$') ~= nil
+  return line:match('^%S+[ \t]*: .*$') ~= nil
 end
 
 local function is_standard_header_line(line)
-  local std_headers = { 'To:', 'Cc:', 'Subject:', 'From:' }
+  local std_headers = { 'To:', 'Cc:', 'Bcc:', 'Subject:', 'From:', 'Message-ID:', 'In-Reply-To:' }
 
   for _, sh in ipairs(std_headers) do
-    if line:match('^' .. sh) then
+    if line:lower():match('^' .. sh:lower()) then
       return true
     end
   end
@@ -689,13 +689,13 @@ local function update_header_diagnostics(buf, diagnostics)
 
     if in_header then
       if line:match('^%s') then
-        -- Continued header line must start with tab
-        if not line:match('^\t') then
+        -- Continued header line must start with space or tab
+        if not line:match('^[ \t]+') then
           table.insert(diagnostics, {
             lnum = linenr - 1,
             col = 0,
             end_col = #line,
-            message = 'Continued header line must start with a tab character.',
+            message = 'Continued header line must start with a space or tab character.',
             severity = vim.diagnostic.severity.ERROR,
           })
         end

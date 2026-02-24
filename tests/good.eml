@@ -1,6 +1,9 @@
+From : also this is a header
 To: Max <max@example.org>
 CC: Alice <alice@example.org,
 	bob@example.org
+BCC: trent
+ <withspacecontinuation.org>
 Subject: A good mail
 
 Hi my dear,
