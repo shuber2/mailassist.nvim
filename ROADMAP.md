@@ -14,8 +14,11 @@ Engineering:
   [nvim-treesitter-textobjects](https://github.com/nvim-treesitter/nvim-treesitter-textobjects)
   makes the implementation of F1 simpler.
 
-## Version 1.0 (in plan)
+## Version 1.1 (in plan)
 
-Open TODO:
-- Improve code quality
+TODO:
 - Memoize completion items instead of contacts
+
+## Version 1.0
+
+- First stable release
